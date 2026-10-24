@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlgoTrader Pro - Algorithmic Trading Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --bg-secondary: #111827;
+      --card: #1a2234;
+      --border: #2a3548;
+      --fg: #f1f5f9;
+      --muted: #64748b;
+      --accent: #00d4aa;
+      --accent-hover: #00f5c4;
+      --danger: #ff4757;
+      --warning: #f6ad55;
+      --info: #48dbfb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+    }
+
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+    }
+
+    .chart-canvas {
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg-secondary) 100%);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .table-row:hover {
+      background: rgba(0, 212, 170, 0.1);
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+  <!-- Navigation -->
+  <nav class="glass-panel backdrop-blur-xl border-b border-border py-4 mb-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[--accent] to-emerald-600 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold">AlgoTrader Pro</h1>
+          <p class="text-sm text-[--muted]">Algorithmic Trading Platform</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-6">
+        <span class="text-sm text-[--muted]">$12,458.32</span>
+        <button id="logoutBtn" class="px-4 py-2 text-sm font-medium bg-[var(--danger)] text-white rounded hover:bg-red-600 transition-colors">
+          Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dashboard Grid -->
+  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- Key Metrics -->
+    <div class="lg:col-span-2 space-y-4">
+      <div class="glass-panel p-6 rounded-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-medium uppercase tracking-wider text-[--muted">Overall Performance</h2>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-bold" id="totalPnL">$0.00</span>
+            <span class="text-[--muted]">Total PnL</span>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-[--muted] uppercase tracking-wider">Win Rate</p>
+            <p class="text-2xl font-bold" id="winRate">0%</p>
+          </div>
+          <div>
+            <p class="text-xs text-[--muted] uppercase tracking-wider">Trades Today</p>
+            <p class="text-2xl font-bold" id="tradesToday">0</p>
+          </div>
+          <div>
+            <p class="text-xs text-[--muted] uppercase tracking-winner">Avg Return</p>
+            <p class="text-2xl font-bold" id="avgReturn">0%</p>
+          </div>
+          <div>
+            <p class="text-xs text-[--muted] uppercase tracking-winner">Max Drawdown</p>
+            <p class="text-2xl font-bold" id="maxDrawdown">0%</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel p-6 rounded-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-medium uppercase tracking-wider">Active Positions</h2>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-bold" id="positionCount">0</span>
+            <span class="text-[--muted]">Positions</span>
+          </div>
+        </div>
+        <p class="text-xs text-[--muted] mb-4">Total active positions across all strategies</p>
+        <div class="h-24 rounded-lg bg-[var(--card)] flex items-center justify-center">
+          <p class="text-[--muted]">No positions</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right sidebar cards -->
+    <div class="space-y-4">
+      <div class="glass-panel p-6 rounded-xl">
+        <h2 class="text-sm font-medium uppercase tracking-wider text-[--muted] mb-4">Recent Trades</h2>
+        <div class="h-96 overflow-y-auto">
+          <div class="space-y-2">
+            <!-- Trades will be populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel p-6 rounded-xl">
+        <h2 class="text-sm font-medium uppercase tracking-wider text-[--muted] mb-4">Portfolio Value</h2>
+        <div class="p-4 rounded-lg bg-[var(--card)]">
+          <p class="text-3xl font-bold" id="portfolioValue">$0.00</p>
+          <p class="text-xs text-[--muted]">Total portfolio value</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="mt-8 md:mt-0 max-w-7xl mx-auto">
+    <!-- Chart Area -->
+    <div class="glass-panel rounded-xl p-6 md:p-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold">Live Price Chart</h2>
+          <p class="text-sm text-[--muted]">BTC/USD Real-time pricing</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="px-3 py-1.5 text-xs font-medium rounded bg-[var(--card)] hover:bg-[var(--border)] transition-colors">1m</button>
+          <button class="px-3 py-1.5 text-xs font-medium rounded bg-[var(--card)] hover:bg-[var(--border)] transition-colors active">5m</button>
+          <button class="px-3 py-1.5 text-xs font-medium rounded bg-[var(--card)] hover:bg-[var(--border)] transition-colors">15m</button>
+          <button class="px-3 py-1.5 text-xs font-medium rounded bg-[var(--card)] hover:bg-[var(--border)] transition-colors">1h</button>
+        </div>
+      </div>
+      
+      <canvas id="priceChart" class="chart-canvas w-full h-64 rounded-lg"></canvas>
+    </div>
+
+    <!-- Trading Panel -->
+    <div class="mt-6 glass-panel rounded-xl p-6 md:p-8">
+      <h2 class="text-xl font-bold mb-4">Execute Trade</h2>
+      
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-sm text-[--muted] mb-2">Symbol</label>
+          <input type="text" id="tradeSymbol" value="BTC/USD" class="w-full px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[--accent]">
+        </div>
+        <div>
+          <label class="block text-sm text-[--muted] mb-2">Amount</label>
+          <input type="number" id="tradeAmount" value="0.001" class="w-full px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[--accent]">
+        </div>
+        <div>
+          <label class="block text-sm text-[--muted] mb-2">Side</label>
+          <select id="tradeSide" class="w-full px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[--accent]">
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-[--muted] mb-2">Strategy</label>
+          <select id="tradeStrategy" class="w-full px-4 py-3 bg-[var(--card)] border border-[var(--border)] rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[--accent]">
+            <option value="momentum">Momentum</option>
+            <option value="mean-reversion">Mean Reversion</option>
+            <option value="breakout">Breakout</option>
+            <option value="trend-follow">Trend Follow</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="executeTrade" class="w-full btn-accent py-4 rounded-lg text-lg font-medium mb-4">
+        Execute Trade
+      </button>
+      
+      <p class="text-xs text-[--muted]">Margin: 10x | Leverage available: Up to 20x</p>
+    </div>
+
+    <!-- Strategies Overview -->
+    <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass-panel rounded-xl p-6">
+        <h2 class="text-sm font-medium uppercase tracking-wider text-[--muted] mb-4">Active Strategies</h2>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--card)]">
+            <span class="font-medium">Momentum Strategy</span>
+            <span class="text-[--muted]" id="stratMomentumStatus">Active</span>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--card)]">
+            <span class="font-medium">Mean Reversion</span>
+            <span class="text-[--muted]" id="stratMeanStatus">Active</span>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--card)]">
+            <span class="font-medium">Breakout Strategy</span>
+            <span class="text-[--muted]" id="stratBreakoutStatus">Inactive</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-xl p-6">
+        <h2 class="text-sm font-medium uppercase tracking-wider text-[--muted] mb-4">Risk Metrics</h2>
+        <div class="space-y-3">
+          <div>
+            <p class="text-xs text-[--muted] uppercase tracking-wider">Current Risk Level</p>
+            <p class="text-2xl font-bold" id="riskLevel">Low</p>
+          </div>
+          <div>
+            <p class="text-xs text-[--muted] uppercase tracking-wider">Exposure</p>
+            <p class="text-2xl font-bold" id="exposure">$0</p>
+          </div>
+          <div>
+            <p class="text-xs text-[--muted] uppercase tracking-winner">Utilization</p>
+            <progress class="w-full h-2 accent-color:--accent" max="100" value="45"></progress>
+            <p class="text-xs text-[--muted] mt-1">45%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize data
+    let trades = [];
+    let portfolioValue = 12458.32;
+    let totalPnL = 0;
+    
+    // Chart data
+    const chartData = {
+      labels: [],
+      prices: []
+    };
+    
+    // Initialize chart
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    const priceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.labels,
+        datasets: [{
+          label: 'BTC/USD',
+          data: chartData.prices,
+          borderColor: '--accent',
+          backgroundColor: 'rgba(0, 212, 170, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 0,
+          pointHoverRadius: 5
+        }]
+      },
+      options: {
+        animation: {
+          duration: 1000
+        },
+        scales: {
+          y: {
+            grid: {
+              color: 'rgba(100, 116, 139, 0.3)'
+            },
+            ticks: {
+              color: '#64748b'
+            },
+            border: {
+              color: 'rgba(100, 116, 139, 0.3)'
+            }
+          },
+          x: {
+            grid: {
+              color: 'rgba(100, 116, 139, 0.3)'
+            },
+            ticks: {
+              color: '#64748b'
+            },
+            border: {
+              color: 'rgba(100, 116, 139, 0.3)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+    
+    // Generate initial chart data
+    function initChartData() {
+      const now = Date.now();
+      for (let i = 0; i < 50; i++) {
+        const price = 45000 + Math.random() * 1000 - 500;
+        chartData.labels.push(new Date(now - i * 60000).toLocaleTimeString());
+        chartData.prices.push(parseFloat((price).toFixed(2)));
+      }
+      priceChart.update();
+    }
+    
+    // Add a new price point
+    function addPricePoint() {
+      const lastPrice = chartData.prices[chartData.prices.length - 1];
+      const newPrice = lastPrice + (Math.random() - 0.5) * 50;
+      chartData.labels.push(new Date().toLocaleTimeString());
+      chartData.prices.push(parseFloat((newPrice).toFixed(2)));
+      if (chartData.labels.length > 50) {
+        chartData.labels.shift();
+        chartData.prices.shift();
+      }
+      priceChart.update();
+    }
+    
+    // Generate mock trade
+    function generateMockTrade() {
+      const sides = ['buy', 'sell'];
+      const strategy = ['momentum', 'mean-reversion', 'breakout', 'trend-follow'];
+      const side = sides[Math.floor(Math.random() * sides.length)];
+      const strat = strategy[Math.floor(Math.random() * strategy.length)];
+      const amount = (Math.random() * 0.1 + 0.001).toFixed(3);
+      const price = (45000 + Math.random() * 1000).toFixed(2);
+      const pnl = (Math.random() - 0.5) * 50;
+      
+      const trade = {
+        id: Date.now(),
+        side,
+        amount,
+        price,
+        pnl: parseFloat(pnl.toFixed(2)),
+        strategy: strat,
+        timestamp: new Date().toLocaleTimeString()
+      };
+      
+      trades.unshift(trade);
+      if (trades.length > 10) trades.pop();
+      
+      updateUI();
+    }
+    
+    // Update UI elements
+    function updateUI() {
+      // Update metrics
+      document.getElementById('totalPnL').textContent = `$${totalPnL.toFixed(2)}`;
+      const winRate = trades.filter(t => t.pnl > 0).length / Math.max(trades.length, 1) * 100;
+      document.getElementById('winRate').textContent = `${winRate.toFixed(1)}%`;
+      document.getElementById('tradesToday').textContent = trades.length;
+      document.getElementById('positionCount').textContent = Math.floor(Math.random() * 5) + 1;
+      document.getElementById('avgReturn').textContent = `${(Math.random() * 20 - 5).toFixed(1)}%`;
+      document.getElementById('maxDrawdown').textContent = `${Math.random() * 15}.5%`;
+      document.getElementById('portfolioValue').textContent = `$${portfolioValue.toFixed(2)}`;
+      
+      // Update strategies status
+      document.getElementById('stratMomentumStatus').textContent = Math.random() > 0.5 ? 'Active' : 'Inactive';
+      document.getElementById('stratMeanStatus').textContent = Math.random() > 0.5 ? 'Active' : 'Inactive';
+      document.getElementById('stratBreakoutStatus').textContent = Math.random() > 0.5 ? 'Active' : 'Inactive';
+      document.getElementById('riskLevel').textContent = Math.random() > 0.7 ? 'High' : 'Low';
+      document.getElementById('exposure').textContent = `$${(Math.random() * 5000 + 1000).toFixed(0)}`;
+      
+      // Update badge colors
+      const statuses = document.querySelectorAll('.status-indicator');
+      statuses.forEach((el, i) => {
+        if (i === 0) el.style.background = 'var(--accent)';
+        else if (i === 1) el.style.background = 'var(--danger)';
+        else if (i === 2) el.style.background = 'var(--warning)';
+      });
+    }
+    
+    // Execute trade handler
+    document.getElementById('executeTrade').addEventListener('click', () => {
+      const symbol = document.getElementById('tradeSymbol').value;
+      const amount = parseFloat(document.getElementById('tradeAmount').value);
+      const side = document.getElementById('tradeSide').value;
+      const strategy = document.getElementById('tradeStrategy').value;
+      
+      // Add mock trade
+      const sides = ['buy', 'sell'];
+      const strategies = ['momentum', 'mean-reversion', 'breakout', 'trend-follow'];
+      
+      const trade = {
+        id: Date.now(),
+        side: side,
+        amount: amount.toFixed(3),
+        price: (45000 + (Math.random() - 0.5) * 200).toFixed(2),
+        pnl: (Math.random() - 0.3) * 100,
+        strategy: strategy,
+        timestamp: new Date().toLocaleTimeString(),
+        symbol
+      };
+      
+      trades.unshift(trade);
+      if (trades.length > 10) trades.pop();
+      
+      // Update PnL
+      totalPnL += trade.pnl;
+      portfolioValue += trade.pnl;
+      
+      updateUI();
+      generateMockTrade();
+      
+      // Show notification
+      alert(`✅ Trade executed successfully!\nSymbol: ${symbol}\nSide: ${side}\nAmount: ${amount} BTC\nPrice: $${trade.price}\nPnL: $${trade.pnl.toFixed(2)}\nStrategy: ${strategy}`);
+    });
+    
+    // Auto-trade every 30 seconds
+    setInterval(() => {
+      if (Math.random() > 0.3) {
+        generateMockTrade();
+      }
+    }, 30000);
+    
+    // Initialize
+    initChartData();
+    setInterval(addPricePoint, 1000);
+    setInterval(generateMockTrade, 5000);
+    
+    // Initial update
+    updateUI();
+  </script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+spring:
+  application:
+    name: tradex-backend
+
+  datasource:
+    url: ${TRADEX_DB_URL:jdbc:h2:mem:tradex;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_UPPER=false}
+    username: ${TRADEX_DB_USERNAME:sa}
+    password: ${TRADEX_DB_PASSWORD:}
+    driver-class-name: ${TRADEX_DB_DRIVER_CLASS_NAME:org.h2.Driver}
+    hikari:
+      pool-name: tradex-pool
+      maximum-pool-size: 12
+      minimum-idle: 2
+      connection-timeout: 10000
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Local dev defaults to H2 and an auto-created schema so the app boots with zero setup.
+      # Set TRADEX_JPA_DDL_AUTO=validate and TRADEX_FLYWAY_ENABLED=true in MySQL-backed envs.
+      ddl-auto: ${TRADEX_JPA_DDL_AUTO:update}
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+        query:
+          in_clause_parameter_padding: true
+
+  flyway:
+    enabled: ${TRADEX_FLYWAY_ENABLED:false}
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  jackson:
+    # ISO-8601 instants with an explicit zone, never epoch numbers.
+    serialization:
+      write-dates-as-timestamps: false
+
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+server:
+  port: 8080
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # Only health and info; diagnostics that could leak data stay closed.
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+logging:
+  level:
+    root: info
+    com.tradex: info
+    org.hibernate.SQL: warn
+    # Set to debug to log every SQL statement during development.
+
+tradex:
+  trading:
+    # Virtual account values are stored in each account's currency. New accounts default to USD.
+    initial-balance: ${TRADEX_INITIAL_BALANCE:10000.00}
+    minimum-initial-balance: ${TRADEX_MINIMUM_INITIAL_BALANCE:100.00}
+    maximum-initial-balance: ${TRADEX_MAXIMUM_INITIAL_BALANCE:1000000.00}
+    default-account-currency: ${TRADEX_DEFAULT_ACCOUNT_CURRENCY:USD}
+    currency: INR
+    # Nominal conversion into the ledger currency for instruments a venue quotes in another
+    # currency (Delta Exchange USD perpetuals). A simulation parameter, NOT a live FX feed.
+    # Prices stay in the instrument's own currency; every cash/P&L/risk amount uses this rate.
+    fx-rates:
+      USD: ${TRADEX_FX_USD_INR:88.50}
+    # Slippage applied to simulated market orders, in basis points (0 = fill at quote).
+    market-order-slippage-bps: ${TRADEX_SLIPPAGE_BPS:0}
+    # Reserve quantity behind resting sell orders so the same shares cannot be promised twice.
+    reserve-sell-quantities: true
+    # Simulated sessions are always open; flip to use exchange hours.
+    always-open: true
+    # Daily P&L, loss-guard reset and the performance series all key off this zone.
+    trading-zone: ${TRADEX_TRADING_ZONE:Asia/Kolkata}
+    # The background matcher that fills resting limit/stop orders and fires attached stops/targets.
+    matching-enabled: ${TRADEX_MATCHING_ENABLED:true}
+    auto-trigger-attached-levels: true
+    # Protective exits (stops/targets) may fire even when the daily loss guard is breached.
+    allow-protective-exits-when-blocked: true
+    charges:
+      brokerage-percent: 0.03
+      brokerage-cap: 20.00
+      exchange-txn-percent: 0.00325
+      sebi-percent: 0.0001
+      gst-percent: 18.00
+      stamp-duty-percent: 0.015
+      dp-charge-per-sell: 13.50
+      rounding-step: 0.01
+
+  marketdata:
+    # auto  = live provider when the selected provider is configured, otherwise the generated feed
+    # simulated = always the generated feed (clearly labelled "SIMULATED DATA")
+    # live  = require the selected provider; refuses to start when it is not configured
+    mode: ${TRADEX_MARKETDATA_MODE:auto}
+    # twelvedata = equities/crypto via Twelve Data (needs api-key)
+    # delta      = Delta Exchange crypto derivatives, public market data (no api-key needed);
+    #              quotes USD perpetuals such as BTCUSD/ETHUSD. No NSE/BSE coverage: unmapped
+    #              instruments show an explicit "live price unavailable" state in live mode.
+    provider: ${TRADEX_MARKETDATA_PROVIDER:twelvedata}
+    api-key: ${TRADEX_MARKETDATA_API_KEY:}
+    base-url: ${TRADEX_MARKETDATA_BASE_URL:https://api.twelvedata.com}
+    # Delta Exchange public API. Use https://cdn-ind.testnet.deltaex.org for the demo environment.
+    delta-base-url: ${TRADEX_DELTA_BASE_URL:https://api.india.delta.exchange}
+    quote-poll-seconds: 15
+    candle-refresh-seconds: 300
+    simulated-tick-millis: 1000
+    bootstrap-days: 400
+    persist-candles: true
+    http-timeout-millis: 8000
+    bootstrap-enabled: true
+    # Optional provider-specific symbol mapping, e.g. tradex.marketdata.symbol-overrides.RELIANCE=NSE:RELIANCE
+    # Indices (NIFTY50, SENSEX) are NOT assumed to be covered by a live provider; list them here to opt in.
+    symbol-overrides: {}
+
+  security:
+    # Override in every real deployment. Minimum 32 characters; startup fails otherwise.
+    jwt-secret: ${TRADEX_SECURITY_JWT_SECRET:tradex-development-only-secret-change-me-please-0123456789}
+    jwt-expiry-minutes: 720
+    issuer: tradex
+    allowed-origins: ${TRADEX_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+    rate-limit:
+      enabled: true
+      capacity: 120
+      window-seconds: 60
+      auth-capacity: 12
+      auth-window-seconds: 60
+    # Development convenience only: POST /api/auth/register is the normal path.
+    seed-demo-user: ${TRADEX_SEED_DEMO_USER:false}
+    demo-username: ${TRADEX_DEMO_USERNAME:demo}
+    demo-password: ${TRADEX_DEMO_PASSWORD:demo12345}
+    demo-email: ${TRADEX_DEMO_EMAIL:demo@tradex.local}

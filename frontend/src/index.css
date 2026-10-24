@@ -1,0 +1,239 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  html {
+    background: #0b0e11;
+  }
+
+  body {
+    margin: 0;
+    background-color: #0b0e11;
+    color: #e6e8eb;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+    font-feature-settings: "tnum" 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: rgb(38 166 154 / 25%);
+    color: #ffffff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0b0e11;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #343a40;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4b535c;
+  }
+
+  input,
+  select,
+  textarea {
+    color-scheme: dark;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid #26a69a;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-lg border shadow-none;
+    background-color: #131820;
+    border-color: #252c35;
+  }
+
+  .panel-header {
+    @apply flex items-center justify-between border-b px-4 py-3;
+    border-color: #252c35;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-accent {
+    @apply btn;
+    background-color: #26a69a;
+    color: #071310;
+  }
+
+  .btn-accent:hover {
+    background-color: #2bbbad;
+  }
+
+  .btn-outline {
+    @apply btn border;
+    border-color: #343c46;
+    color: #c5cbd3;
+  }
+
+  .btn-outline:hover {
+    background-color: #1b222b;
+    border-color: #505966;
+  }
+
+  .btn-ghost {
+    @apply btn;
+    color: #aeb6c2;
+  }
+
+  .btn-ghost:hover {
+    background-color: #1b222b;
+    color: #f0f2f5;
+  }
+
+  .btn-danger,
+  .btn-sell {
+    @apply btn;
+    background-color: #ef5350;
+    color: #ffffff;
+  }
+
+  .btn-danger:hover,
+  .btn-sell:hover {
+    background-color: #e74845;
+  }
+
+  .btn-buy {
+    @apply btn;
+    background-color: #26a69a;
+    color: #071310;
+  }
+
+  .btn-buy:hover {
+    background-color: #2bbbad;
+  }
+
+  .input {
+    @apply w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 disabled:opacity-60;
+    background-color: #0b0e11;
+    border-color: #343c46;
+    color: #e6e8eb;
+    --tw-ring-color: #26a69a;
+  }
+
+  .input::placeholder {
+    color: #687382;
+  }
+
+  .input:focus {
+    border-color: #26a69a;
+  }
+
+  .label {
+    @apply mb-1 block text-xs font-medium uppercase tracking-wide;
+    color: #848e9c;
+  }
+
+  .table-base {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .table-base th {
+    @apply border-b px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide;
+    background-color: #131820;
+    border-color: #252c35;
+    color: #848e9c;
+  }
+
+  .table-base td {
+    @apply border-b px-3 py-2;
+    border-color: #202630;
+    color: #c5cbd3;
+  }
+
+  .table-base tbody tr {
+    transition: background-color 120ms ease;
+  }
+
+  .table-base tbody tr:hover {
+    background-color: #171e27;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide;
+  }
+
+  .badge-sim {
+    @apply badge;
+    background-color: rgb(240 180 41 / 10%);
+    border: 1px solid rgb(240 180 41 / 30%);
+    color: #f0b429;
+  }
+
+  .badge-live {
+    @apply badge;
+    background-color: rgb(38 166 154 / 10%);
+    border: 1px solid rgb(38 166 154 / 30%);
+    color: #26a69a;
+  }
+
+  .badge-neutral {
+    @apply badge;
+    background-color: #202630;
+    border: 1px solid #343c46;
+    color: #aeb6c2;
+  }
+
+  .link-accent {
+    color: #26a69a;
+  }
+
+  .link-accent:hover {
+    color: #2bbbad;
+    text-decoration: underline;
+  }
+}
+
+@layer utilities {
+  .num {
+    @apply font-mono tabular-nums;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text-profit {
+    color: #26a69a;
+  }
+
+  .text-loss {
+    color: #ef5350;
+  }
+
+  .border-market {
+    border-color: #252c35;
+  }
+}
